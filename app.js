@@ -140,8 +140,6 @@ app.get('/testlogin', function(req, res){
 	if (err) {
 	    console.log("Error: " + err);
 	    res.send(401, err);
-	    // res.status(404);
-	    // res.end();
 	}
 	// Change main page to put user information in it, and refresh local tokens
 	else{
@@ -160,20 +158,6 @@ app.get('/testlogin', function(req, res){
     
 });
 
-app.get('/test/send', ensureAuthenticated, function(req, res){
-    
-    
-
-
-    var dropbox = new DropboxClient(DROPBOX_APP_KEY, DROPBOX_APP_SECRET, req.user.access_token, req.user.access_token_secret);
-    dropbox.root = 'sandbox';
-    dropbox.putFile('test2.txt', '/test2.txt', function (err, data){
-    	if (err) return console.log(err);
-    });
-
-    res.redirect('/');
-    console.log('test2');
-});
 
 // Send the content in the query to dropbox
 app.get('/sendfile',  function(req, res){
@@ -276,8 +260,6 @@ app.get('/getfile', function(req, res){
 
 
 app.listen(3000);
-//app.listen(8080, "0.0.0.0");
-//app.listen(3000, "localhost");
 console.log('listening on 3000');
 
 
@@ -288,6 +270,5 @@ console.log('listening on 3000');
 // login page.
 function ensureAuthenticated(req, res, next) {
   if (req.isAuthenticated()) { return next(); }
-  //res.redirect('/login')
     res.redirect('/auth/dropbox');
 }

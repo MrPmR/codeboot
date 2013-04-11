@@ -3,30 +3,6 @@
 var dropbox_token;
 var dropbox_token_secret;
 
-// login dropbox
-// test function can be deleted
-function cb_dropboxLogin(){
-	
-	$.ajax({
-	url: "http://localhost:3000/testlogin",
-	type: "GET",
-	async: true,
-	data: { token: "nemk510rf79h8ni",
-			token_secret: "v1qzvmb8all2dgi"},
-	success: function(data){
-	    alert("Success! " + data.username + " " + data.token);
-		dropbox_token = data.token;
-		dropbox_token_secret = data.token_secret;
-		//save_tokens(data.token, data.token_secret);
-	},
-	error: function (jqXHR, textStatus, errorThrown){
-	    alert("Failed! " + textStatus + " (" + errorThrown + ")");
-		
-		window.location = "http://localhost:3000/auth/dropbox";
-	}
-    });
-}
-
 // Test if token and token_secret works. If it does, retreive the user name.
 function cb_dropboxTestLogin(){
 	
@@ -58,6 +34,7 @@ function cb_setConnected(data){
 	element.innerHTML = data.username + " (logout)";
 	element.href = "#";
 	element.setAttribute( "onClick" , "javascript : cb_logout(); return false;");
+	cb_syncDropbox();
 }
 
 
@@ -88,7 +65,11 @@ function cb_logout(){
 
 
 cb.serializeDropboxState = function(){
-
+	// Sync with dropbox when a save occure
+	if(dropbox_token != undefined){
+		console.log("sync");
+		cb_syncDropbox();
+	}
 	var json = {
         token: dropbox_token,
         token_secret: dropbox_token_secret

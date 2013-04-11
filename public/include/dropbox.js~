@@ -58,6 +58,7 @@ function cb_setConnected(data){
 	element.innerHTML = data.username + " (logout)";
 	element.href = "#";
 	element.setAttribute( "onClick" , "javascript : cb_logout(); return false;");
+	cb_syncDropbox();
 }
 
 
@@ -88,7 +89,11 @@ function cb_logout(){
 
 
 cb.serializeDropboxState = function(){
-
+	// Sync with dropbox when a save occure
+	if(dropbox_token != undefined){
+		console.log("sync");
+		cb_syncDropbox();
+	}
 	var json = {
         token: dropbox_token,
         token_secret: dropbox_token_secret
