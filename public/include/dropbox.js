@@ -138,7 +138,7 @@ function add_many_toLocal(files) {
 	for(var i = 0; i < files.length; i++){
 		fileName = getFileName(files[i].path);
 		//rejet des noms contenant un tild
-		if(!fileName.contains("~")){
+		if(fileName.indexOf("~") < 0){
 			dropboxGetFile(files[i].path, fileName);
 		}
 	}
@@ -285,7 +285,7 @@ function cb_dropboxMissingFiles(dropboxFiles){
 	
 	var results = new Array();
 	for(var filename in cb.fs.files){
-		if(filename.contains("sample"))
+		if(filename.indexOf("sample/") == 0)
 			continue;
 		var exist = false;
 		for(var i in dropboxFiles){
