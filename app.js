@@ -3,7 +3,6 @@
 var express = require('express')
   , passport = require('passport')
   , util = require('util')
-, oauth =require('oauth')
   , DropboxStrategy = require('passport-dropbox').Strategy;
 
 var fs = require('fs');
