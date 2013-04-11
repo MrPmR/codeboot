@@ -33,6 +33,8 @@ cb.serializeState = function () {
 
     state.repl.history = cb.repl.cb.history.serializeState();
 
+	state.dropbox = cb.serializeDropboxState();
+
     state.files = cb.fs.serialize();
     state.openEditors = [];
     $(".row[data-cb-filename]").each(function () {
@@ -85,6 +87,14 @@ cb.restoreState = function (state) {
             }
         }) || failed;
     }
+
+	if (state.dropbox) {
+		failed = cb_internal_attempt(function () {
+			cb.restoreDropbox(state.dropbox);
+
+		}) || failed ;
+	}
+
 
     if (failed) {
         cb.reportError("Failed to restore state");

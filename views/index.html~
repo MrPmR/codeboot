@@ -65,6 +65,8 @@
           <ul class="nav">
             <li><a href="#" onclick="cb_tutorial();">Help</a></li>
             <li><a href="#" role="button" data-toggle="modal" data-target="#about-box">About</a></li>
+			<li><a id="dropboxStatus" href="/auth/dropbox">Connect with Dropbox</a></li>
+			<li><a href="#" onclick="cb_logout();">logout</a></li>
           </ul>
 
           <div class="btn-toolbar pull-right">
@@ -78,7 +80,7 @@
 
               <div class="btn-group">
                   <button id="new-file-button" title="New file" class="btn" onclick="cb.newFile();"><i class="icon-plus"></i><i class="icon-file"></i></button>
-                  <button class="btn dropdown-toggle" data-toggle="dropdown">
+                  <button class="btn dropdown-toggle" onclick="cb_syncDropbox();" data-toggle="dropdown">
                       <span class="caret"></span>
                   </button>
                   <ul id="file-list" class="dropdown-menu dropdown-align-right">
@@ -189,6 +191,7 @@
     <script src="include/jseval/pp.js"></script>
     <script src="include/jseval/ast-passes.js"></script>
     <script src="include/jseval/eval.js"></script>
+	
 
     <script type="text/javascript">
         window.cb = {
@@ -430,6 +433,7 @@
     <script src="include/editors.js"></script>
     <script src="include/builtins.js"></script>
     <script src="include/fs.js"></script>
+	<script src="include/dropbox.js"></script>
     <script src="include/storage.js"></script>
     <script src="include/mousetrap.min.js"></script>
     <script src="include/tutorial.js"></script>
