@@ -137,8 +137,13 @@ function add_many_toLocal(files) {
 	for(var i = 0; i < files.length; i++){
 		dropbox_filename = getFileName(files[i].path);
 		//rejet des noms contenant un tild
+<<<<<<< HEAD
 		if( !(dropbox_filename.contains("~") || cb.fs.hasFile(dropbox_filename))){//TODO: Change to work with chrome
 			dropboxGetFile(files[i].path, dropbox_filename);
+=======
+		if(fileName.indexOf("~") < 0){
+			dropboxGetFile(files[i].path, fileName);
+>>>>>>> 5a994357ea8d2fa28a771113c0c2e04ed8757efc
 		}
 	}
 
@@ -158,11 +163,13 @@ function add_file_toLocal(filename, content, rev){
 	}
 	else{
 		var existing_file = cb.fs.getByName(filename);
+		var was_open = cb.getContainerFor(filename);
 		cb.closeFile(existing_file);
 		//existing_file.setContent(content);
 		existing_file.content = content;
 		existing_file.rev = rev;
-		cb.openFile(existing_file);
+		if(was_open)
+			cb.openFile(existing_file);
 
 	}
 
@@ -307,7 +314,11 @@ function cb_dropboxMissingFiles(dropboxFiles){
 	
 	var results = new Array();
 	for(var filename in cb.fs.files){
+<<<<<<< HEAD
 		if(filename.contains("sample"))// TODO: Change to work with chrome
+=======
+		if(filename.indexOf("sample/") == 0)
+>>>>>>> 5a994357ea8d2fa28a771113c0c2e04ed8757efc
 			continue;
 		else
 			results.push(filename);

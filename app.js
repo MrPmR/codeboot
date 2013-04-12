@@ -211,8 +211,8 @@ app.get('/getmany', function(req, res){
     dropbox.root = 'sandbox';
     dropbox.search('/', ".js" , function(err, data){
 	if (err) return console.log(err);
-	
-	console.log("Here's what's in the folder" + data[0].path);
+
+	//console.log("Here's what's in the folder" + data[0].path);
 	
 	
 	
