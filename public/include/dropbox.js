@@ -116,7 +116,6 @@ function cb_refresh() {
         success: function(data){
             // alert("Success! " + data);
 	    // refresh_local_files("testfact.js", data);
-		console.log(data);
 		//alert("Success! " + data);
 	    //refresh_local_files("random", data);
 		//donnees = JSON.parse(data)
@@ -131,32 +130,45 @@ function cb_refresh() {
 }
 
 
-// add files from dropbox
+// add files from dropbox if they aren't in local storage already
 function add_many_toLocal(files) {
 
-
+	
 	for(var i = 0; i < files.length; i++){
-		fileName = getFileName(files[i].path);
+		dropbox_filename = getFileName(files[i].path);
 		//rejet des noms contenant un tild
-		if(!fileName.contains("~")){
-			dropboxGetFile(files[i].path, fileName);
+		if( !(dropbox_filename.contains("~") || cb.fs.hasFile(dropbox_filename))){//TODO: Change to work with chrome
+			dropboxGetFile(files[i].path, dropbox_filename);
 		}
 	}
 
 }
 
 
-function add_file_toLocal(filename, content){
+function add_file_toLocal(filename, content, rev){
     // var filename = "testfact.js";
-    var file = new CPFile(filename, content);
+    
 
 	if(!cb.fs.hasFile(filename)){
-
+		var file = new CPFile(filename, content);
+		file.rev = rev;
     	cb.fs.addFile(file);
 
     	cb.addFileToMenu(file);
 	}
+	else{
+		var existing_file = cb.fs.getByName(filename);
+		var was_open = cb.getContainerFor(filename);
+		cb.closeFile(existing_file);
+		//existing_file.setContent(content);
+		existing_file.content = content;
+		existing_file.rev = rev;
+		if(was_open)
+			cb.openFile(existing_file);
 
+	}
+
+	//console.log(cb.fs.getByName(filename));
 
     // cb.newTab(file);
     return filename;
@@ -165,50 +177,6 @@ function add_file_toLocal(filename, content){
 
 
 
-// Fonction temporaire de test
-function cb_refresh_many() {
-    $.ajax({
-        url: "http://localhost:3000/getmany",
-        type: "GET",
-        async: true,
-		data: { token: dropbox_token, token_secret: dropbox_token_secret},
-        success: function(data){
-            
-	    // refresh_local_files("testfact.js", data);
-	    //donnees = JSON.parse(data)
-
-	    //alert("Success! " + donnees.files[0].file);
-			add_many_toLocal(data);
-	    //refresh_local_files(donnees.files[0].filename, donnees.files[0].file);
-	    
-        },
-        error: function (jqXHR, textStatus, errorThrown) {
-            console.log("Failed! " + textStatus + " (" + errorThrown + ")");
-	
-        }
-    });
-}
-
-// Fonction temporaire de test
-function cb_getDropboxFilesMetaData() {
-	var metadata;
-    $.ajax({
-        url: "http://localhost:3000/getmany",
-        type: "GET",
-        async: true,
-		data: { token: dropbox_token, token_secret: dropbox_token_secret},
-        success: function(data){
-            
-			metadata =  data;
-	    
-        },
-        error: function (jqXHR, textStatus, errorThrown) {
-            console.log("Failed! " + textStatus + " (" + errorThrown + ")");
-	
-        }
-    });
-	return metadata;
-}
 
 
 
@@ -230,13 +198,8 @@ function dropboxGetFile(path, filename) {
 		data: { path: path, token: dropbox_token, token_secret: dropbox_token_secret},
 
         success: function(data){
-            // alert("Success! " + data);
-	    // refresh_local_files("testfact.js", data);
-		//alert("Success! " + data);
-	    //refresh_local_files("random", data);
-		//donnees = JSON.parse(data)
-	    
-	    add_file_toLocal(filename, data.files[0].content);
+
+	    add_file_toLocal(filename, data.files[0].content, data.files[0].rev);
 	    
         },
         error: function (jqXHR, textStatus, errorThrown) {
@@ -263,12 +226,24 @@ function cb_syncDropbox(){
 			//}
 			
 			var missingFiles = cb_dropboxMissingFiles(data);
+			var conflicts = cb_findConflicts(missingFiles, data);
 			for(var i in missingFiles){
 				cb_dropboxSendFile(missingFiles[i]);
 
 			}
+			// If there will be a conflict
+			if(conflicts.length > 0){
+				console.log("CONFLICTS : " + conflicts);
+				cb_resolveConflicts(conflicts);
 
-			add_many_toLocal(data);
+			}
+			else{
+				// add files that weren't in localstorage already
+				add_many_toLocal(data);
+			}
+			
+			
+			
 	    
         },
         error: function (jqXHR, textStatus, errorThrown) {
@@ -276,18 +251,69 @@ function cb_syncDropbox(){
 	
         }
     });
-
-	
 }
 
-// Test which files are missing in the dropbox
+// Resolve conflicts
+function cb_resolveConflicts(conflicts){
+	
+	//for(var filename in cb.fs.files){
+
+	$.ajax({
+        url: "http://localhost:3000/getmany",
+        type: "GET",
+        async: true,
+		data: { token: dropbox_token, token_secret: dropbox_token_secret},
+        success: function(data){
+            
+
+			//****
+			for(var i = 0; i < conflicts.length; i++){
+				dropboxGetFile(conflicts[i], getFileName(conflicts[i]));
+			}
+			// Add files that weren't in local storage already
+			add_many_toLocal(data);
+			// Refresh
+			
+			
+	    
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            console.log("Failed! " + textStatus + " (" + errorThrown + ")");
+	
+        }
+    });
+}
+
+// Test to know which files will have conflicts
+function cb_findConflicts(filesToSend, dropboxFiles){
+	
+	var conflicts = new Array();
+	
+	for(var i = 0; i < dropboxFiles.length; i++){
+		filename = getFileName(dropboxFiles[i].path);
+		if(cb.fs.hasFile(filename)){
+			
+			if(cb.fs.getByName(filename).rev != dropboxFiles[i].rev){
+				console.log("conflict? : " + filename + " rev : (local) " + cb.fs.getByName(filename).rev + " (dropbox) " + dropboxFiles[i].rev);
+				conflicts.push(dropboxFiles[i].path);
+			}
+		}
+
+	}
+
+	return conflicts;
+}
+
+// Build an array of files to send to dropbox
 function cb_dropboxMissingFiles(dropboxFiles){
 	
 	var results = new Array();
 	for(var filename in cb.fs.files){
-		if(filename.contains("sample"))
+		if(filename.contains("sample"))// TODO: Change to work with chrome
 			continue;
-		var exist = false;
+		else
+			results.push(filename);
+		/*var exist = false;
 		for(var i in dropboxFiles){
 			if(dropboxFiles[i].path == "/" + filename){
 				exist = true;
@@ -296,7 +322,7 @@ function cb_dropboxMissingFiles(dropboxFiles){
 		}	
 
 		if(!exist)
-			results.push(filename);
+			results.push(filename);*/
 		
 	}
 	
@@ -308,12 +334,12 @@ function cb_dropboxMissingFiles(dropboxFiles){
 function cb_dropboxSendFile(filename){
 	
 	
-	file = cb.fs.getByName(filename);
+	var file = cb.fs.getByName(filename);
 	$.ajax({
         url: "http://localhost:3000/sendfile",
         type: "GET",
         async: true,
-		data: { filename: file.filename, content:file.content, token: dropbox_token, token_secret: dropbox_token_secret},
+		data: { filename: file.filename, content:file.content, token: dropbox_token, token_secret: dropbox_token_secret, rev: file.rev},
 
         success: function(data){
             // alert("Success! " + data);
@@ -323,7 +349,8 @@ function cb_dropboxSendFile(filename){
 		//donnees = JSON.parse(data)
 	    
 	    //refresh_local_files(filename, data.files[0].content);
-	    console.log("Sent : " + file.filename);
+			file.rev = data.rev;
+	    	console.log("Sent : " + file.filename + " old rev : " + file.rev + " new rev : " + data.rev);
         },
         error: function (jqXHR, textStatus, errorThrown) {
             alert("Failed! " + textStatus + " (" + errorThrown + ")");

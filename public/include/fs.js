@@ -144,6 +144,7 @@ function CPFile(filename, content, opts) {
     this.filename = filename;
     this.content = (content !== (void 0)) ? content : NEW_FILE_DEFAULT_CONTENT;
     this.cursor = null;
+	this.rev = null;
     this.stamp = 0;
     this.editor = undefined;
 
@@ -187,6 +188,7 @@ CPFile.prototype.serialize = function () {
         cursor: this.cursor === null ?
                 {line: 0, ch: 0} :
                 {line: this.cursor.line, ch: this.cursor.ch},
+		rev: this.rev,
         stamp: this.stamp
     };
     return json;

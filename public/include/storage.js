@@ -73,6 +73,13 @@ cb.restoreState = function (state) {
         cb.setDevMode(!!state.devMode);
     }) || failed;
 
+
+	if (state.dropbox) {
+		failed = cb_internal_attempt(function () {
+			cb.restoreDropbox(state.dropbox);
+
+		}) || failed ;
+	}
     if (state.files) {
         failed = cb_internal_attempt(function () {
             cb.fs.restore(state.files);
@@ -88,12 +95,7 @@ cb.restoreState = function (state) {
         }) || failed;
     }
 
-	if (state.dropbox) {
-		failed = cb_internal_attempt(function () {
-			cb.restoreDropbox(state.dropbox);
 
-		}) || failed ;
-	}
 
 
     if (failed) {

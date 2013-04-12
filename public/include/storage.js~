@@ -33,7 +33,7 @@ cb.serializeState = function () {
 
     state.repl.history = cb.repl.cb.history.serializeState();
 
-	state.dropbox = cb_serializeDropboxState();
+	state.dropbox = cb.serializeDropboxState();
 
     state.files = cb.fs.serialize();
     state.openEditors = [];
@@ -90,7 +90,7 @@ cb.restoreState = function (state) {
 
 	if (state.dropbox) {
 		failed = cb_internal_attempt(function () {
-			cb_restoreDropbox(state.dropbox);
+			cb.restoreDropbox(state.dropbox);
 
 		}) || failed ;
 	}

@@ -164,32 +164,40 @@ app.get('/sendfile',  function(req, res){
     access_token = req.query.token;
     access_token_secret = req.query.token_secret;
     
-    console.log(req.query.filename);
-    console.log(req.query.content);
     var dropbox = new DropboxClient(DROPBOX_APP_KEY, DROPBOX_APP_SECRET, access_token, access_token_secret);
     dropbox.root = 'sandbox';
     // write the content to a file temporarly
-    fs.writeFile("/tmp/" + req.query.filename, req.query.content, function(err){
+    fs.writeFile("/tmp/" + req.query.filename, req.query.content,  function(err){
 	if(err){
-	    console.log(err);
+	    return console.log(err);
 	}
     });
-
-
+   
+    
+    
     // Send the file to dropbox
-    dropbox.putFile("/tmp/" + req.query.filename, '/' + req.query.filename, function (err, data){
+    dropbox.putFile("/tmp/" + req.query.filename, '/' + req.query.filename,  { parent_rev: req.query.rev }, function (err, data){
     	if (err) return console.log(err);
+	 
+	console.log("File : " + req.query.filename);
+	console.log("revision before : " + req.query.rev);
+	console.log("revision after : " + data.rev);
+	res.writeHead(200, {'Content-Type': 'application/json; charset=UTF-8', 'Access-Control-Allow-Origin':'*'});
+	
+	
+	res.status(200);
+	res.end(JSON.stringify(data));
     });
     // Delete the file afterward
     fs.unlink("/tmp/" + req.query.filename, function(err){
 	if(err){
-	    console.log(err);
+	    return console.log(err);
 	}
     });
 
-
-
-    res.redirect('/');
+    
+    
+   // res.redirect('/');
 });
 
 
@@ -228,26 +236,27 @@ app.get('/getfile', function(req, res){
     access_token = req.query.token;
     access_token_secret = req.query.token_secret;
     
-    if( !req.isAuthenticated()) {
-        console.log("Not authenticated to dropbox.");
-    }
     var dropbox = new DropboxClient(DROPBOX_APP_KEY, DROPBOX_APP_SECRET, access_token, access_token_secret);
     dropbox.root = 'sandbox';
-
-    dropbox.getFile(req.query.path, function(err, data){
+    dropbox.getFile(req.query.path, function(err, content){
         if (err) {
-            console.log("Can't read" + req.query.path);
+            console.log("Can't read " + req.query.path);
         }
         if (err) return console.log(err);
-
-        console.log("Here's what's in " + req.query.path + " " + data);
 	
-	datajson = {"files": [{"content": data}]};
-	res.writeHead(200, {'Content-Type': 'application/json; charset=UTF-8', 'Access-Control-Allow-Origin':'*'});
+        console.log("Got " + req.query.path + " successfully");
 	
 	
-        res.status(200);
-        res.end(JSON.stringify(datajson));
+	dropbox.getMetadata(req.query.path, function(err, metadata){
+	    
+	    datajson = {"files": [{"content": content, "rev":metadata.rev}]};
+	    
+	    res.writeHead(200, {'Content-Type': 'application/json; charset=UTF-8', 'Access-Control-Allow-Origin':'*'});
+	
+	
+            res.status(200);
+            res.end(JSON.stringify(datajson));
+	});
 	// res.end(data);
 
     });
