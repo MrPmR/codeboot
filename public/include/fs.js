@@ -264,6 +264,7 @@ CPFileManager.prototype.getByName = function (filename) {
 CPFileManager.prototype.deleteFile = function (fileOrFilename) {
     var filename = this._asFilename(fileOrFilename);
     if (this.hasFile(filename)) {
+		cb_dropboxDeleteFile(filename);
         delete this.files[filename];
         return true;
     }
