@@ -157,6 +157,19 @@ app.get('/testlogin', function(req, res){
     
 });
 
+app.get('/deletefile', function(req, res){
+
+    access_token = req.query.token;
+    access_token_secret = req.query.token_secret;
+    var dropbox = new DropboxClient(DROPBOX_APP_KEY, DROPBOX_APP_SECRET, access_token, access_token_secret);
+    dropbox.root = 'sandbox';
+
+    dropbox.deleteItem(req.query.path, function(err, data){
+	if(err) return console.log(err);
+	// res.status(200);
+	// res.end();
+    });
+});
 
 // Send the content in the query to dropbox
 app.get('/sendfile',  function(req, res){

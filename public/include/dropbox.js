@@ -91,22 +91,20 @@ cb.restoreDropbox = function(dropbox){
 
 //*************************************** File system dropbox ***
 
-
+// Delete the file on dropbox
 function cb_dropboxDeleteFile(filename){
 	if(dropbox_token != undefined){
 		$.ajax({
-        url: "http://localhost:3000/deleteFile",
+        url: "http://localhost:3000/deletefile",
         type: "GET",
         async: true,
-		data: { path: path, token: dropbox_token, token_secret: dropbox_token_secret},
-        success: function(data){
+		data: { path: "/"+filename, token: dropbox_token, token_secret: dropbox_token_secret},
+        success: function(){
             // alert("Success! " + data);
 	    // refresh_local_files("testfact.js", data);
 		//alert("Success! " + data);
 	    //refresh_local_files("random", data);
 		//donnees = JSON.parse(data)
-	    alert("Success! " + data.files[0].file);
-	    refresh_local_files(data.files[0].filename, data.files[0].file);
 	    
         },
         error: function (jqXHR, textStatus, errorThrown) {
@@ -245,7 +243,6 @@ function cb_syncDropbox(){
 
 			var filesToSend = cb_toSend(localFiles, data);
 			var filesToReceive = cb_toReceive(data);
-			console.log("toreceive : " + filesToReceive);
 
 			var conflicts = cb_findConflicts(localFiles, data);
 			for(var i in filesToSend){
