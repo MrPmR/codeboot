@@ -144,8 +144,9 @@ function CPFile(filename, content, opts) {
     this.filename = filename;
     this.content = (content !== (void 0)) ? content : NEW_FILE_DEFAULT_CONTENT;
     this.cursor = null;
-	this.rev = null;
+	this.rev = 0;
 	this.modified = true;
+	this.dropbox_cursor = "";
     this.stamp = 0;
     this.editor = undefined;
 
@@ -264,8 +265,8 @@ CPFileManager.prototype.getByName = function (filename) {
 CPFileManager.prototype.deleteFile = function (fileOrFilename) {
     var filename = this._asFilename(fileOrFilename);
     if (this.hasFile(filename)) {
+		delete this.files[filename];
 		cb_dropboxDeleteFile(filename);
-        delete this.files[filename];
         return true;
     }
 

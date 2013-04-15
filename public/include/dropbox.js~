@@ -2,6 +2,7 @@
 
 var dropbox_token;
 var dropbox_token_secret;
+var dropbox_cursor;
 
 // Test if token and token_secret works. If it does, retreive the user name.
 function cb_dropboxTestLogin(){
@@ -72,7 +73,8 @@ cb.serializeDropboxState = function(){
 	}*/ // No need to sync here
 	var json = {
         token: dropbox_token,
-        token_secret: dropbox_token_secret
+        token_secret: dropbox_token_secret,
+		dropbox_cursor: dropbox_cursor
     };
     return json;
 
@@ -81,6 +83,7 @@ cb.restoreDropbox = function(dropbox){
 	console.log("restore : " + dropbox.token + " " + dropbox.token_secret);
 	dropbox_token = dropbox.token;
 	dropbox_token_secret = dropbox.token_secret;
+	dropbox_cursor = dropbox.dropbox_cursor;
 	cb_dropboxTestLogin();
 };
 
@@ -99,7 +102,7 @@ function cb_dropboxDeleteFile(filename){
         type: "GET",
         async: true,
 		data: { path: "/"+filename, token: dropbox_token, token_secret: dropbox_token_secret},
-        success: function(data){
+        success: function(){
             // alert("Success! " + data);
 	    // refresh_local_files("testfact.js", data);
 		//alert("Success! " + data);
@@ -217,14 +220,71 @@ function dropboxGetFile(path, filename) {
 	    
         },
         error: function (jqXHR, textStatus, errorThrown) {
-            alert("Failed! " + textStatus + " (" + errorThrown + ")");
+            console.log("Failed! " + textStatus + " (" + errorThrown + ")");
         }
     });
 }
 
 
-// Synchronise with dropbox
+
 function cb_syncDropbox(){
+	
+	$.ajax({
+        url: "http://localhost:3000/delta",
+        type: "GET",
+        async: true,
+		data: { token: dropbox_token, token_secret: dropbox_token_secret, cursor: dropbox_cursor},
+        success: function(data){
+            
+			//for(var i = 0; i < data.length; i ++){
+			//	console.log(data[i].path);
+			//}
+			
+			console.log(data);
+			dropbox_cursor = data.cursor;
+			// Delete local files that were deleted on dropbox
+			cb_toDelete(data.entries);
+			var filesToReceive = cb_toReceive(data.entries);
+			var localFiles = cb_localFiles();
+			var filesToSend = cb_toSend(localFiles, data.entries);
+
+			console.log(filesToReceive);
+			
+			var conflicts = cb_findConflicts(localFiles, data.entries);
+			for(var i in filesToSend){
+				cb_dropboxSendFile(filesToSend[i]);
+
+			}
+
+			// If there will be a conflict
+			if(conflicts.length > 0){
+				//console.log("CONFLICTS : " + conflicts);
+				cb_resolveConflicts(conflicts);
+
+			}// add files that weren't in localstorage already
+			else{
+				add_many_toLocal(filesToReceive);
+			}
+			
+			
+		
+			
+			
+			
+			
+	    
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            console.log("Failed! " + textStatus + " (" + errorThrown + ")");
+	
+        }
+    });
+
+
+}
+
+// Synchronise with dropbox
+function cb_syncDropbox2(){
 	
 	//for(var filename in cb.fs.files){
 
@@ -239,11 +299,15 @@ function cb_syncDropbox(){
 			//	console.log(data[i].path);
 			//}
 			
-			var localFiles = cb_localFiles();
 
-			var filesToSend = cb_toSend(localFiles, data);
 			var filesToReceive = cb_toReceive(data);
+			var localFiles = cb_localFiles();
+			var filesToSend = cb_toSend(localFiles, data);
 
+			console.log("files to send " + filesToSend);
+			console.log("Files to receive : " + filesToReceive);
+			//for(var i = 0; i < filesToReceive.length; i++)
+			//console.log("Files to receive " : + filesToReceive[i]);
 			var conflicts = cb_findConflicts(localFiles, data);
 			for(var i in filesToSend){
 				cb_dropboxSendFile(filesToSend[i]);
@@ -280,26 +344,26 @@ function cb_resolveConflicts(conflicts, dropboxFiles){
 	
 	
 	for(var i =0; i< conflicts.length; i++){
-		cb_dropboxSendFile(getFileName(conflicts[i]));
+		cb_dropboxSendFile(getFileName(conflicts[i].path));
 	}
-	
 	alert("There was a conflict found on the files : " + conflicts + " Both versions were kept.");
-
+	
 	//for(var filename in cb.fs.files){
 
 	$.ajax({
-        url: "http://localhost:3000/getmany",
+        url: "http://localhost:3000/delta",
         type: "GET",
         async: true,
-		data: { token: dropbox_token, token_secret: dropbox_token_secret},
+		data: { token: dropbox_token, token_secret: dropbox_token_secret, cursor: dropbox_cursor},
         success: function(data){
             
 
 			//****
 			for(var i = 0; i < conflicts.length; i++){
-				dropboxGetFile(conflicts[i], getFileName(conflicts[i]));
+				dropboxGetFile(conflicts[i].path, getFileName(conflicts[i].path));
 			}
-			var filesToReceive = cb_toReceive(data);
+			dropbox_cursor = data.cursor;
+			var filesToReceive = cb_toReceive(data.entries);
 			// Add files that weren't in local storage already
 			add_many_toLocal(filesToReceive);
 			// Refresh
@@ -320,32 +384,52 @@ function cb_findConflicts(filesToSend, dropboxFiles){
 	var conflicts = new Array();
 	
 	for(var i = 0; i < dropboxFiles.length; i++){
-		filename = getFileName(dropboxFiles[i].path);
+		if(dropboxFiles[i][1] == null)
+			continue;
+		filename = getFileName(dropboxFiles[i][1].path);
+
 		if(cb.fs.hasFile(filename)){
 			
-			if(cb.fs.getByName(filename).rev != dropboxFiles[i].rev && cb.fs.getByName(filename).modified){
-				console.log("conflict? : " + filename + " rev : (local) " + cb.fs.getByName(filename).rev + " (dropbox) " + dropboxFiles[i].rev);
-				conflicts.push(dropboxFiles[i].path);
+			if(cb.fs.getByName(filename).rev != dropboxFiles[i][1].rev && cb.fs.getByName(filename).modified){
+				console.log("conflict? : " + filename + " rev : (local) " + cb.fs.getByName(filename).rev + " (dropbox) " + dropboxFiles[i][1].rev);
+				conflicts.push(dropboxFiles[i][1]);
 			}
 		}
 	}
 	return conflicts;
 }
+// delete the file in codeboot
+// TODO: Might have a problem with case sensitive names (what is returned by dropbox in the case of deleted files is NOT case sensitive
+function cb_toDelete(dropboxFiles){
+	
+	for(var i =0; i < dropboxFiles.length; i++){
+		if(dropboxFiles[i][1] == null)
+			cb.deleteFile(getFileName(dropboxFiles[i][0]));
+	}
+
+}
+
 
 // Compare dropbox files to locals, return files that weren't changed localy and were changed on dropbox OR files not existing localy
 function cb_toReceive(dropboxFiles){
 	var toReceive = new Array();
 
 	for(var i = 0; i < dropboxFiles.length; i++){
-		
-		var filename = getFileName(dropboxFiles[i].path);
+		if(dropboxFiles[i][1] == null)
+			continue;
+		var filename = getFileName(dropboxFiles[i][1].path);
+		console.log(filename);
 
 		// If file exist localy
 		if(cb.fs.hasFile(filename)){
-			if(cb.fs.getByName(filename).rev != dropboxFiles[i].rev && ! (cb.fs.getByName(filename).modified))
+			/*if(dropboxFiles[i][1].is_deleted){
+				cb.fs.deleteFile(filename);
+			}*/
+			if(cb.fs.getByName(filename).rev != dropboxFiles[i][1].rev && ! (cb.fs.getByName(filename).modified))
 				toReceive.push(dropboxFiles[i]);
-		}else if(filename.indexOf("~") < 0){
-			toReceive.push(dropboxFiles[i]);
+		}
+		else if(filename.indexOf("~") < 0/* && !dropboxFiles[i].is_deleted*/){
+			toReceive.push(dropboxFiles[i][1]);
 		}
 	}
 	
@@ -366,7 +450,7 @@ function cb_toSend(localFiles, dropboxFiles){
 			if(file.modified && ( dropboxFile.rev == file.rev))
 				toSend.push(file.filename);
 		}
-		else // if it doesn't exist on dropbox
+		else if(file.modified)// if it doesn't exist on dropbox
 			toSend.push(file.filename); 
 
 	}
@@ -430,7 +514,7 @@ function cb_dropboxSendFile(filename){
 	    	console.log("Sent : " + file.filename + " old rev : " + file.rev + " new rev : " + data.rev);
         },
         error: function (jqXHR, textStatus, errorThrown) {
-            alert("Failed! " + textStatus + " (" + errorThrown + ")");
+            console.log("Failed! " + textStatus + " (" + errorThrown + ")");
         }
     });
 
@@ -439,9 +523,12 @@ function cb_dropboxSendFile(filename){
 
 // test if filname is present in the list of files (json)
 function cb_isFileInList(filename, listOfFiles){
+	if(listOfFiles.length < 0)
+		return false;
 	for(var i = 0; i < listOfFiles.length; i++){
-		if(getFileName(listOfFiles[i].path) == filename)
-			return listOfFiles[i];
+		if(listOfFiles[i][1] != null && getFileName(listOfFiles[i][0]) == filename){
+			return listOfFiles[i][1];
+		}
 
 	}
 	return false;
