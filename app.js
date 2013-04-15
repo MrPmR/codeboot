@@ -101,7 +101,6 @@ app.get('/auth/dropbox',
 app.get('/auth/dropbox/callback',
   passport.authenticate('dropbox', { failureRedirect: '/login' }),
   function(req, res) {
-      // console.log(req.user);
       console.log(req.user);
       res.redirect('/');
   });
@@ -166,8 +165,6 @@ app.get('/deletefile', function(req, res){
 
     dropbox.deleteItem(req.query.path, function(err, data){
 	if(err) return console.log(err);
-	// res.status(200);
-	// res.end();
     });
 });
 
@@ -244,9 +241,6 @@ app.get('/getmany', function(req, res){
     dropbox.search('/', ".js" , {include_deleted:true}, function(err, data){
 	if (err) return console.log(err);
 
-	//console.log("Here's what's in the folder" + data[0].path);
-	
-	
 	
 	res.writeHead(200, {'Content-Type': 'application/json; charset=UTF-8', 'Access-Control-Allow-Origin':'*'});
 	
@@ -272,8 +266,6 @@ app.get('/delta', function(req, res){
     dropbox.delta(req.query.cursor , function(err, data){
 	if (err) return console.log(err);
 
-	//console.log("Here's what's in the folder" + data[0].path);
-	
 	
 	
 	res.writeHead(200, {'Content-Type': 'application/json; charset=UTF-8', 'Access-Control-Allow-Origin':'*'});
@@ -317,7 +309,6 @@ app.get('/getfile', function(req, res){
             res.status(200);
             res.end(JSON.stringify(datajson));
 	});
-	// res.end(data);
 
     });
 });
