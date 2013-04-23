@@ -398,7 +398,7 @@ i.icon-link {
   height: 16px;
 }
 
-.icon-white,
+[class^="icon-exp-"].icon-white,
 .nav > .active > a > [class^="icon-exp-"],
 .nav > .active > a > [class*=" icon-exp-"],
 .dropdown-menu > li > a:hover > [class^="icon-exp-"],
