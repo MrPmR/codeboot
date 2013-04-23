@@ -398,7 +398,7 @@ i.icon-link {
   height: 16px;
 }
 
-.icon-white,
+[class^="icon-exp-"].icon-white,
 .nav > .active > a > [class^="icon-exp-"],
 .nav > .active > a > [class*=" icon-exp-"],
 .dropdown-menu > li > a:hover > [class^="icon-exp-"],
@@ -418,6 +418,18 @@ i.icon-exp-infinity {
 
 i.icon-exp-pause {
   background-position: -20px 0;
+}
+
+.animated {
+  animation-name: rotateIcon;
+  animation-duration: 2s;
+  animation-iteration-count: infinite;
+  animation-timing-function: linear;
+}
+
+@keyframes rotateIcon {
+  from { transform: scale( 1 ) rotate( 0deg );   }
+  to   { transform: scale( 1 ) rotate( 360deg ); }
 }
 
 /* ----- Navbar ----- */

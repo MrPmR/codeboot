@@ -8,6 +8,8 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
+    <script src="include/prefixfree.min.js"></script>
+
     <!-- Styles -->
     <link href="include/jquery-ui/css/custom-theme/jquery-ui-1.8.16.custom.css" rel="stylesheet">
     <link href="include/bootstrap/css/bootstrap.css" rel="stylesheet">
@@ -66,7 +68,7 @@
             <li><a href="#" onclick="cb_tutorial();">Help</a></li>
             <li><a href="#" role="button" data-toggle="modal" data-target="#about-box">About</a></li>
 			<li><a id="dropboxStatus" href="/auth/dropbox">Connect with Dropbox</a></li>
-			<li><a href="#" onclick="cb_syncDropbox();">Sync</a></li>
+			<li><a href="#" onclick="cb_syncDropbox();"><i id="syncIcon" class="icon-refresh"></i></a></li>
           </ul>
 
           <div class="btn-toolbar pull-right">
@@ -191,7 +193,7 @@
     <script src="include/jseval/pp.js"></script>
     <script src="include/jseval/ast-passes.js"></script>
     <script src="include/jseval/eval.js"></script>
-	
+
 
     <script type="text/javascript">
         window.cb = {
@@ -233,7 +235,8 @@
             $("#navbar")
                 .removeClass(navbarColorClass(cb.navbarColor))
                 .addClass(navbarColorClass(color));
-                cb.navbarColor = color;
+            $('#navbar ul.nav i[class^="icon-"]').toggleClass("icon-white", color !== "white");
+            cb.navbarColor = color;
         }
 
         cb.setDevMode = function (devMode) {
