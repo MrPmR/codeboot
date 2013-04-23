@@ -1,5 +1,7 @@
 .DS_Store
 .project
 .settings
+*~
+*.swp
 /node_modules
 /config.js
