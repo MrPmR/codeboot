@@ -21,7 +21,6 @@ function cb_dropboxTestLogin(){
 		// Not connected
 		error: function (jqXHR, textStatus, errorThrown){
 			cb_logout();
-			console.log("Test failed");
 			
 		}
     });
@@ -53,8 +52,6 @@ function cb_logout(){
 		type: "GET",
 		async: true,
 		success: function(){
-	    	//alert("Success! ");
-			console.log("success, logged out");
 		},
 		error: function (jqXHR, textStatus, errorThrown){
 	    	//alert("Failed! " + textStatus + " (" + errorThrown + ")");
@@ -201,7 +198,6 @@ function cb_syncDropbox(){
         success: function(data){
             
 			
-			console.log(data);
 			dropbox_cursor = data.cursor;
 			// Delete local files that were deleted on dropbox
 			cb_toDelete(data.entries);
@@ -250,9 +246,6 @@ function cb_syncDropbox2(){
 			var filesToReceive = cb_toReceive(data);
 			var localFiles = cb_localFiles();
 			var filesToSend = cb_toSend(localFiles, data);
-
-			console.log("files to send " + filesToSend);
-			console.log("Files to receive : " + filesToReceive);
 			var conflicts = cb_findConflicts(localFiles, data);
 			for(var i in filesToSend){
 				cb_dropboxSendFile(filesToSend[i]);
@@ -326,7 +319,6 @@ function cb_findConflicts(filesToSend, dropboxFiles){
 		if(cb.fs.hasFile(filename)){
 			
 			if(cb.fs.getByName(filename).rev != dropboxFiles[i][1].rev && cb.fs.getByName(filename).modified){
-				console.log("conflict? : " + filename + " rev : (local) " + cb.fs.getByName(filename).rev + " (dropbox) " + dropboxFiles[i][1].rev);
 				conflicts.push(dropboxFiles[i][1]);
 			}
 		}
@@ -353,7 +345,6 @@ function cb_toReceive(dropboxFiles){
 		if(dropboxFiles[i][1] == null)
 			continue;
 		var filename = getFileName(dropboxFiles[i][1].path);
-		console.log(filename);
 
 		// If file exist localy
 		if(cb.fs.hasFile(filename)){
@@ -400,21 +391,6 @@ function cb_localFiles(){
 		if(filename.indexOf("sample/") < 0)
 			results.push(filename);
 
-		/*
-		if(filename.indexOf("sample/") != 0 || !filename.modified)
-			continue;
-		else 
-			results.push(filename);*/
-		/*var exist = false;
-		for(var i in dropboxFiles){
-			if(dropboxFiles[i].path == "/" + filename){
-				exist = true;
-				break;
-			}
-		}	
-
-		if(!exist)
-			results.push(filename);*/
 		
 	}
 	
@@ -434,13 +410,6 @@ function cb_dropboxSendFile(filename){
 		data: { filename: file.filename, content:file.content, token: dropbox_token, token_secret: dropbox_token_secret, rev: file.rev},
 
         success: function(data){
-            // alert("Success! " + data);
-	    // refresh_local_files("testfact.js", data);
-		//alert("Success! " + data);
-	    //refresh_local_files("random", data);
-		//donnees = JSON.parse(data)
-	    
-	    //refresh_local_files(filename, data.files[0].content);
 			file.rev = data.rev;
 			file.modified = false;
 	    	console.log("Sent : " + file.filename + " old rev : " + file.rev + " new rev : " + data.rev);

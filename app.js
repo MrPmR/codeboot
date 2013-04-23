@@ -163,17 +163,49 @@ app.get('/testlogin', function(req, res){
     
 });
 
-app.get('/deletefile', function(req, res){
 
+
+// Test if the file exist on dropbox and delete it
+app.get('/deletefile', function(req, res){
+    console.log('will delete the file');
     access_token = req.query.token;
     access_token_secret = req.query.token_secret;
     var dropbox = new DropboxClient(DROPBOX_APP_KEY, DROPBOX_APP_SECRET, access_token, access_token_secret);
     dropbox.root = 'sandbox';
 
+
+    dropbox.getMetadata(req.query.path, function(err, data){
+	// If the file was never created on dropbox
+	if(err){
+	    res.status(200);
+	    res.send(200);
+	    //return console.log(err);
+	}else{
+	    // if the file was deleted previously
+	    if(data.is_deleted){
+		res.status(200);
+		res.send(200);
+	    }
+	    else{
+		console.log(data);
+		dropbox.deleteItem(req.query.path, function(err2, data){
+		    if(err2) return console.log(err2);
+		    res.status(200);
+		    res.send(200);
+		});
+	    }
+	}
+
+    });
+
+/*
     dropbox.deleteItem(req.query.path, function(err, data){
 	if(err) return console.log(err);
-    });
+    });*/
 });
+
+
+
 
 // Send the content in the query to dropbox
 app.get('/sendfile',  function(req, res){
@@ -189,7 +221,6 @@ app.get('/sendfile',  function(req, res){
 	    return console.log(err);
 	}
     });
-    console.log(req.query.rev);
     if(req.query.rev == 0){
 	// Send the file to dropbox
 	dropbox.putFile("/tmp/" + req.query.filename, '/' + req.query.filename, function (err, data){
