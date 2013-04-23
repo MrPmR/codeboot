@@ -278,9 +278,14 @@ CPFileManager.prototype.renameFile = function (fileOrFilename, newFilename) {
         throw "File already exists: " + newFilename;
     }
     var file = this._asFile(fileOrFilename);
-    delete this.files[file.filename];
+	
+	this.deleteFile(file);
+    //delete this.files[file.filename];
     file.filename = newFilename;
+	file.modified = true;
     this.addFile(file);
+	// synchronise with dropbox if connected
+	cb_syncDropbox();
 };
 
 CPFileManager.prototype.getContent = function (fileOrFilename) {
