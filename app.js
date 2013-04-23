@@ -9,7 +9,14 @@ var fs = require('fs');
 var http = require('https');
 var DropboxClient = require('dropbox-node').DropboxClient;
 
-var config = require('./configcb');
+var config;
+try {
+    config = require('./config');
+} catch (e) {
+    console.log("No configuration found in 'config.js'");
+    console.log("Copy 'config.js.sample' to 'config.js' and edit the file to get started.");
+    process.exit(1);
+}
 var DROPBOX_APP_KEY = config.DROPBOX_APP_KEY;
 var DROPBOX_APP_SECRET = config.DROPBOX_APP_SECRET;
 

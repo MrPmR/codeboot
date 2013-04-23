@@ -392,7 +392,7 @@ cb.initFS = function () {
 cb.generateUniqueFilename = function () {
     var prefix = "script";
     for (var index = 1; ; index++) {
-        var candidateName = prefix + index;
+        var candidateName = prefix + index + ".js";
         if (!cb.fs.hasFile(candidateName)) {
             return candidateName;
         }
