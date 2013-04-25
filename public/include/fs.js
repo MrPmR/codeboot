@@ -278,7 +278,7 @@ CPFileManager.prototype.renameFile = function (fileOrFilename, newFilename) {
         throw "File already exists: " + newFilename;
     }
     var file = this._asFile(fileOrFilename);
-	
+
 	this.deleteFile(file);
     //delete this.files[file.filename];
     file.filename = newFilename;
@@ -356,7 +356,7 @@ cb.addFileToMenu = function (fileOrFilename) {
     });
 
     if (!cb.fs.isBuiltin(file)) {
-        var $deleteButton = $('<i class="icon-trash pull-right"/>');
+        var $deleteButton = $('<i class="icon-trash file-delete-icon"/>');
         $file_link.append($deleteButton);
         $deleteButton.click(function (event) {
             var reallyDelete = confirm("Delete file '" + filename + "'? This cannot be undone.");

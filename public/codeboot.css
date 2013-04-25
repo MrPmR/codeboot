@@ -97,6 +97,16 @@
     margin-top: 3px;
 }
 
+.file-delete-icon {
+  position: absolute;
+  right: 20px;
+  margin-top: 3px;
+}
+
+li[data-cb-filename] > a {
+  padding-right: 40px;
+}
+
 /* ----- Tabs ----- */
 
 .nav-tabs {
