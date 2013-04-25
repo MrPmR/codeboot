@@ -283,9 +283,13 @@ CPFileManager.prototype.renameFile = function (fileOrFilename, newFilename) {
     //delete this.files[file.filename];
     file.filename = newFilename;
 	file.modified = true;
+	
     this.addFile(file);
 	// synchronise with dropbox if connected
-	cb_syncDropbox();
+	// Doesn't work, because async of delete
+	//cb_syncDropbox();
+	// Might not work
+	cb_dropboxSendFile(file.filename);
 };
 
 CPFileManager.prototype.getContent = function (fileOrFilename) {

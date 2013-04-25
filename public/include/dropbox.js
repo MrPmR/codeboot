@@ -348,7 +348,7 @@ function cb_toReceive(dropboxFiles){
 			if(cb.fs.getByName(filename).rev != dropboxFiles[i][1].rev && ! (cb.fs.getByName(filename).modified))
 				toReceive.push(dropboxFiles[i]);
 		}
-		else if(filename.indexOf("~") < 0){
+		else if(filename.indexOf("~") < 0 && ! dropboxFiles[i][1].is_dir){
 			toReceive.push(dropboxFiles[i][1]);
 		}
 	}
