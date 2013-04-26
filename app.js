@@ -21,6 +21,16 @@ var DROPBOX_APP_KEY = config.DROPBOX_APP_KEY;
 var DROPBOX_APP_SECRET = config.DROPBOX_APP_SECRET;
 
 
+function randomString(len, charSet) {
+    charSet = charSet || 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    var randomString = '';
+    for (var i = 0; i < len; i++) {
+        var randomPoz = Math.floor(Math.random() * charSet.length);
+        randomString += charSet.substring(randomPoz,randomPoz+1);
+    }
+    return randomString;
+}
+
 
 passport.serializeUser(function(user, done) {
   done(null, user);
@@ -208,15 +218,17 @@ app.get('/sendfile',  function(req, res){
     
     var dropbox = new DropboxClient(DROPBOX_APP_KEY, DROPBOX_APP_SECRET, access_token, access_token_secret);
     dropbox.root = 'sandbox';
+    tempfilename = randomString(10);//"tempfile.js";
     // write the content to a file temporarly
-    fs.writeFile("/tmp/" + req.query.filename, req.query.content,  function(err){
+    fs.writeFile("/tmp/" + tempfilename, req.query.content,  function(err){
 	if(err){
 	    return console.log(err);
 	}
     });
+
     if(req.query.rev == 0){
 	// Send the file to dropbox
-	dropbox.putFile("/tmp/" + req.query.filename, '/' + req.query.filename, function (err, data){
+	dropbox.putFile("/tmp/" + tempfilename, '/' + req.query.filename, function (err, data){
     	    if (err) return console.log(err);
 	    
 	    console.log("File : " + req.query.filename);
@@ -234,7 +246,7 @@ app.get('/sendfile',  function(req, res){
     }
     else{
 	// Send the file to dropbox
-	dropbox.putFile("/tmp/" + req.query.filename, '/' + req.query.filename,  { parent_rev: req.query.rev }, function (err, data){
+	dropbox.putFile("/tmp/" + tempfilename, '/' + req.query.filename,  { parent_rev: req.query.rev }, function (err, data){
     	    if (err) return console.log(err);
 	    
 	    console.log("File : " + req.query.filename);
@@ -249,7 +261,7 @@ app.get('/sendfile',  function(req, res){
 
     }
     // Delete the file afterward
-    fs.unlink("/tmp/" + req.query.filename, function(err){
+    fs.unlink("/tmp/" + tempfilename, function(err){
 	if(err){
 	    return console.log(err);
 	}

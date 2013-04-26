@@ -161,7 +161,11 @@ function add_file_toLocal(filename, content, rev){
 
 // Remove the path and only keeps the file name
 function getFileName(path) {
-	return path.split("/").pop();
+	if(path[0] == "/"){
+		return path.slice(1, path.length);
+	}
+	else return path;
+	//return path.split("/").pop();
 }
 
 
@@ -228,44 +232,6 @@ function cb_syncDropbox(){
 
 }
 
-// Old synchronise function with search instead of delta
-function cb_syncDropbox2(){
-
-
-	$.ajax({
-        url: "http://localhost:3000/getmany",
-        type: "GET",
-        async: true,
-		data: { token: dropbox_token, token_secret: dropbox_token_secret},
-        success: function(data){
-
-
-			var filesToReceive = cb_toReceive(data);
-			var localFiles = cb_localFiles();
-			var filesToSend = cb_toSend(localFiles, data);
-			var conflicts = cb_findConflicts(localFiles, data);
-			for(var i in filesToSend){
-				cb_dropboxSendFile(filesToSend[i]);
-
-			}
-
-			// If there will be a conflict
-			if(conflicts.length > 0){
-				cb_resolveConflicts(conflicts);
-
-			}// add files that weren't in localstorage already
-			else{
-				add_many_toLocal(filesToReceive);
-			}
-
-
-        },
-        error: function (jqXHR, textStatus, errorThrown) {
-            console.log("Failed! " + textStatus + " (" + errorThrown + ")");
-
-        }
-    });
-}
 
 // Resolve conflicts
 function cb_resolveConflicts(conflicts, dropboxFiles){
