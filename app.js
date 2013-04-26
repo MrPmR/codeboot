@@ -218,17 +218,17 @@ app.get('/sendfile',  function(req, res){
     
     var dropbox = new DropboxClient(DROPBOX_APP_KEY, DROPBOX_APP_SECRET, access_token, access_token_secret);
     dropbox.root = 'sandbox';
-    tempfilename = randomString(10);//"tempfile.js";
+    // tempfilename = randomString(10);//"tempfile.js";
     // write the content to a file temporarly
-    fs.writeFile("/tmp/" + tempfilename, req.query.content,  function(err){
-	if(err){
-	    return console.log(err);
-	}
-    });
+    // fs.writeFile("/tmp/" + tempfilename, req.query.content,  function(err){
+    // 	if(err){
+    // 	    return console.log(err);
+    // 	}
+    // });
 
     if(req.query.rev == 0){
 	// Send the file to dropbox
-	dropbox.putFile("/tmp/" + tempfilename, '/' + req.query.filename, function (err, data){
+	dropbox.put(req.query.content, '/' + req.query.filename, function (err, data){
     	    if (err) return console.log(err);
 	    
 	    console.log("File : " + req.query.filename);
@@ -246,7 +246,7 @@ app.get('/sendfile',  function(req, res){
     }
     else{
 	// Send the file to dropbox
-	dropbox.putFile("/tmp/" + tempfilename, '/' + req.query.filename,  { parent_rev: req.query.rev }, function (err, data){
+	dropbox.put(req.query.content, '/' + req.query.filename,  { parent_rev: req.query.rev }, function (err, data){
     	    if (err) return console.log(err);
 	    
 	    console.log("File : " + req.query.filename);
@@ -261,11 +261,11 @@ app.get('/sendfile',  function(req, res){
 
     }
     // Delete the file afterward
-    fs.unlink("/tmp/" + tempfilename, function(err){
-	if(err){
-	    return console.log(err);
-	}
-    });
+    // fs.unlink("/tmp/" + tempfilename, function(err){
+    // 	if(err){
+    // 	    return console.log(err);
+    // 	}
+    // });
     
     
    // res.redirect('/');
