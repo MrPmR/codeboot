@@ -273,10 +273,32 @@ CPFileManager.prototype.deleteFile = function (fileOrFilename) {
     return false;
 };
 
+
+
+CPFileManager.prototype.verifyFilename = function (filename){
+	
+	if (this.hasFile(filename)) {
+		throw "File already exists: " + filename;
+	}
+	
+	if (filename[0] == "/") {
+		throw "File name should begin with '/' : " + filename;
+	}
+
+	//return true;
+}
+
+
+
+
 CPFileManager.prototype.renameFile = function (fileOrFilename, newFilename) {
-    if (this.hasFile(newFilename)) {
-        throw "File already exists: " + newFilename;
-    }
+	//if (newFilename[0] == "/") {
+		//throw "Invalid file name: ( '/' at the begining ) " + newFilename;
+	//}
+	this.verifyFilename(newFilename);
+    //if (this.hasFile(newFilename)) {
+     //   throw "File already exists: " + newFilename;
+    //}
     var file = this._asFile(fileOrFilename);
 
 	this.deleteFile(file);
@@ -655,11 +677,28 @@ function cb_internal_onTabDblClick(event) {
         if (event.keyCode == 13) {
             // Enter pressed, perform renaming
             var newFilename = $inputBox.val();
+			// Check if the filename exists
             if (cb.fs.hasFile(newFilename)) {
                 alert("Filename already in use");
                 resetTab();
                 return;
             }
+			// Test if filename contains //
+			var pat = /[/]{2,}/;
+			if(newFilename.match(pat)){
+				alert("Filename should not contain '//'");
+				resetTab();
+				return;
+			}
+			
+
+
+			// Test if filename starts with /
+			if (newFilename[0] == "/") {
+				alert("Filename should begin with '/'");
+				resetTab();
+				return;
+			}
 
             cb.fs.renameFile(oldFilename, newFilename);
             $inputBox.remove();
@@ -773,3 +812,5 @@ cb.openFileExistingOrNew = function (filename) {
         return false;
     }
 };
+
+
