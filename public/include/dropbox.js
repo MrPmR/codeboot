@@ -270,11 +270,14 @@ function cb_syncDropbox2(){
 // Resolve conflicts
 function cb_resolveConflicts(conflicts, dropboxFiles){
 
-
+	var fileNames = "";
 	for(var i =0; i< conflicts.length; i++){
 		cb_dropboxSendFile(getFileName(conflicts[i].path));
+		fileNames += conflicts[i].path + " ";
 	}
-	alert("There was a conflict found on the files : " + conflicts + " Both versions were kept.");
+	
+
+	alert("There was a conflict found on the files : " + fileNames + " Both versions were kept.");
 
 
 	$.ajax({
