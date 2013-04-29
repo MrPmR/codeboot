@@ -19,7 +19,7 @@ cb.scrollTo = function (elementOrSelector) {
 cb.getShortURL = function (longUrl) {
 	var shortURL;
 	$.ajax({
-            url: "urlshortener.cgi",
+            url: "/script/urlshortener",
             type: "POST",
             data: {longUrl: longUrl},
             dataType: "json",

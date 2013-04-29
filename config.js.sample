@@ -5,3 +5,6 @@ var config = {};
 
 config.DROPBOX_APP_KEY = "put your app key here";
 config.DROPBOX_APP_SECRET  = "put your app secret here";
+
+// Optional
+//config.GOOGLE_SHORTENER_KEY = "";

@@ -9,6 +9,7 @@ var fs = require('fs');
 var http = require('http');
 var url = require('url');
 var DropboxClient = require('dropbox-node').DropboxClient;
+var googl = require('goo.gl');
 
 var config;
 try {
@@ -21,6 +22,9 @@ try {
 var DROPBOX_APP_KEY = config.DROPBOX_APP_KEY;
 var DROPBOX_APP_SECRET = config.DROPBOX_APP_SECRET;
 
+if (config.GOOGLE_SHORTENER_KEY) {
+    googl.setKey(config.GOOGLE_SHORTENER_KEY);
+}
 
 
 
@@ -345,6 +349,15 @@ app.post('/script/download', function(req, res) {
     res.writeHead(200, {'Content-Type': 'application/download; charset=UTF-8', 'Content-Disposition': 'attachment; filename="' + req.param('filename') + '"'});
     res.status(200);
     res.end(req.param('content'));
+});
+
+app.post('/script/urlshortener', function(req, res) {
+    console.log("longUrl: " + req.param('longUrl'));
+    googl.shorten(req.param('longUrl'), function (shortUrl) {
+        res.writeHead(200, {'Content-Type': 'application/json'});
+        res.status(200);
+        res.end(JSON.stringify(shortUrl));
+    });
 });
 
 // Don't use the /script/ namespace here because resources (e.g. css) are loaded by relative path

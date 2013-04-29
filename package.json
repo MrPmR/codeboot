@@ -6,7 +6,8 @@
     "ejs": ">= 0.0.0",
     "passport": ">= 0.0.0",
     "passport-dropbox": ">= 0.0.0",
-    "dropbox-node": ">= 0.0.0"
+    "dropbox-node": ">= 0.0.0",
+    "goo.gl": ">= 0.0.0"
   },
   "scripts" : {
   "start" : "node app.js"
