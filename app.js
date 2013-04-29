@@ -7,6 +7,7 @@ var express = require('express')
 
 var fs = require('fs');
 var http = require('http');
+var url = require('url');
 var DropboxClient = require('dropbox-node').DropboxClient;
 
 var config;
@@ -76,7 +77,7 @@ app.configure(function() {
 
 
 app.get('/', function(req, res){
-    res.render('index.html');
+    res.render('index.html', {replay_query: null});
 });
 
 app.get('/account', ensureAuthenticated, function(req, res){
@@ -344,6 +345,12 @@ app.post('/script/download', function(req, res) {
     res.writeHead(200, {'Content-Type': 'application/download; charset=UTF-8', 'Content-Disposition': 'attachment; filename="' + req.param('filename') + '"'});
     res.status(200);
     res.end(req.param('content'));
+});
+
+// Don't use the /script/ namespace here because resources (e.g. css) are loaded by relative path
+app.get('/query', function(req, res) {
+    var query = url.parse(req.url).query;
+    res.render('index.html', {replay_query: '"' + query + '"'});
 });
     
 
