@@ -1455,7 +1455,7 @@ cb.compile_file = function (filename) {
 cb.urlGet = function (url) {
     var content;
     $.ajax({
-        url: "urlget.cgi",
+        url: "/script/urlget",
         type: "POST",
         data: {url: url},
         dataType: "text",

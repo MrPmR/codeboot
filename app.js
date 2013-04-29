@@ -6,7 +6,7 @@ var express = require('express')
   , DropboxStrategy = require('passport-dropbox').Strategy;
 
 var fs = require('fs');
-var http = require('https');
+var http = require('http');
 var DropboxClient = require('dropbox-node').DropboxClient;
 
 var config;
@@ -331,8 +331,16 @@ app.get('/getfile', function(req, res){
     });
 });
 
+app.post('/script/urlget', function(req, res) {
+    var url = req.param("url");
 
-app.post('/download', function(req, res) {
+    http.get(url, function(proxy_res) {
+        res.writeHead(proxy_res.statusCode, proxy_res.headers);
+        proxy_res.pipe(res);
+    });
+});
+
+app.post('/script/download', function(req, res) {
     res.writeHead(200, {'Content-Type': 'application/download; charset=UTF-8', 'Content-Disposition': 'attachment; filename="' + req.param('filename') + '"'});
     res.status(200);
     res.end(req.param('content'));
