@@ -331,8 +331,12 @@ app.get('/getfile', function(req, res){
     });
 });
 
-    
 
+app.post('/download', function(req, res) {
+    res.writeHead(200, {'Content-Type': 'application/download; charset=UTF-8', 'Content-Disposition': 'attachment; filename="' + req.param('filename') + '"'});
+    res.status(200);
+    res.end(req.param('content'));
+});
     
 
 
